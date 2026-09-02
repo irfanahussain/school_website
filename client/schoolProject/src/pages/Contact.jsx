@@ -1,40 +1,40 @@
-import { useState } from "react";
-import { submitContactMessage } from "../api.js";
+import {useState} from "react";
+import {submitContactMessage} from "../api.js";
 
-const INITIAL_FORM = { name: "", email: "", phone: "", subject: "", message: "" };
+const INITIAL_FORM={ name: "", email: "", phone: "", subject: "", message: "" };
 
 function validate(form) {
   const errors = {};
   if (!form.name.trim()) errors.name = "Please enter your name.";
-  if (!/^\S+@\S+\.\S+$/.test(form.email)) errors.email = "Please enter a valid email address.";
+  if (!/^\S+@\S+\.\S+$/.test(form.email)) errors.email="Please enter a valid email address.";
   if (form.phone && !/^\+?[0-9 ()\-]{7,20}$/.test(form.phone)) {
     errors.phone = "Please enter a valid phone number, or leave this blank.";
   }
-  if (!form.subject.trim()) errors.subject = "Please add a short subject.";
-  if (form.message.trim().length < 10) {
+  if (!form.subject.trim()) errors.subject="Please add a short subject.";
+  if (form.message.trim().length<10) {
     errors.message = "Please write at least 10 characters so we know how to help.";
   }
   return errors;
 }
 
 export default function Contact() {
-  const [form, setForm] = useState(INITIAL_FORM);
-  const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState("idle"); // idle | submitting | success | error
+  const [form,setForm] = useState(INITIAL_FORM);
+  const [errors,setErrors] = useState({});
+  const [status,setStatus] = useState("idle"); 
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const {name,value }=event.target;
     setForm((f) => ({ ...f, [name]: value }));
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const validationErrors = validate(form);
+    const validationErrors=validate(form);
     setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) return;
+    if (Object.keys(validationErrors).length> 0)return;
 
     setStatus("submitting");
-    try {
+    try{
       await submitContactMessage(form);
       setStatus("success");
       setForm(INITIAL_FORM);

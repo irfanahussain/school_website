@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react";
-import { getCourses } from "../api.js";
+import { useEffect,useState} from "react";
+import {getCourses} from "../api.js";
 
 const STAGES = [
-  { value: "", label: "All grades" },
-  { value: "primary", label: "Primary" },
-  { value: "middle", label: "Middle School" },
-  { value: "high", label: "High School" },
+  { value: "",label: "All grades" },
+  { value:"primary", label: "Primary" },
+  { value:"middle", label: "Middle School" },
+  { value:"high", label: "High School" },
 ];
 
 export default function Courses() {
-  const [stage, setStage] = useState("");
-  const [courses, setCourses] = useState([]);
-  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const[stage,setStage] = useState("");
+  const[courses,setCourses] = useState([]);
+  const[status,setStatus] = useState("loading");
 
   useEffect(() => {
     let cancelled = false;
@@ -59,7 +59,7 @@ export default function Courses() {
           ))}
         </div>
 
-        {status === "loading" && <p className="state-message">Loading courses…</p>}
+        {status==="loading" && <p className="state-message">Loading courses…</p>}
 
         {status === "error" && (
           <p className="state-message state-message--error">

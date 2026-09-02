@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { getGalleryImages } from "../api.js";
 
 const CATEGORIES = [
-  { value: "", label: "All photos" },
-  { value: "campus", label: "Campus" },
-  { value: "academics", label: "Academics" },
-  { value: "sports", label: "Sports" },
-  { value: "events", label: "Events" },
-  { value: "arts", label: "Arts" },
+  {value:"", label: "All photos" },
+  {value:"campus", label: "Campus" },
+  {value:"academics", label: "Academics" },
+  {value:"sports", label: "Sports" },
+  {value:"events", label: "Events" },
+  {value:"arts", label: "Arts" },
 ];
 
 export default function Gallery() {
