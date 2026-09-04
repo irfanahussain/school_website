@@ -1,17 +1,18 @@
-import { useEffect,useState} from "react";
-import {getCourses} from "../api.js";
+import { useEffect, useState } from "react";
+import { getCourses } from "../api.js";
+import Reveal from "../components/Reveal.jsx";
 
 const STAGES = [
-  { value: "",label: "All grades" },
-  { value:"primary", label: "Primary" },
-  { value:"middle", label: "Middle School" },
-  { value:"high", label: "High School" },
+  { value: "", label: "All programs" },
+  { value: "primary", label: "Foundation (8-10)" },
+  { value: "middle", label: "Class 11 & 12" },
+  { value: "high", label: "Competitive & Dropper" },
 ];
 
 export default function Courses() {
-  const[stage,setStage] = useState("");
-  const[courses,setCourses] = useState([]);
-  const[status,setStatus] = useState("loading");
+  const [stage, setStage] = useState("");
+  const [courses, setCourses] = useState([]);
+  const [status, setStatus] = useState("loading");
 
   useEffect(() => {
     let cancelled = false;
@@ -36,16 +37,16 @@ export default function Courses() {
   return (
     <>
       <section className="page-header">
-        <p className="page-header__eyebrow">Academics</p>
-        <h1>Courses across every grade.</h1>
+        <p className="page-header__eyebrow eyebrow">Academics</p>
+        <h1>Courses built around real exam patterns.</h1>
         <p className="page-header__lede">
-          A shared academic core runs from Kindergarten through Grade 12, building in depth and
-          independence as students move through each division.
+          From early Foundation batches to intensive Dropper programs, every course is anchored
+          in weekly testing, rank tracking, and mentors who specialise in that exact stage.
         </p>
       </section>
 
       <section className="section">
-        <div className="tabs" role="tablist" aria-label="Filter courses by grade band">
+        <div className="tabs" role="tablist" aria-label="Filter courses by program stage">
           {STAGES.map((s) => (
             <button
               key={s.value || "all"}
@@ -59,7 +60,7 @@ export default function Courses() {
           ))}
         </div>
 
-        {status==="loading" && <p className="state-message">Loading courses…</p>}
+        {status === "loading" && <p className="state-message">Loading courses…</p>}
 
         {status === "error" && (
           <p className="state-message state-message--error">
@@ -69,13 +70,13 @@ export default function Courses() {
         )}
 
         {status === "ready" && courses.length === 0 && (
-          <p className="state-message">No courses found for this grade band yet.</p>
+          <p className="state-message">No courses found for this category yet.</p>
         )}
 
         {status === "ready" && courses.length > 0 && (
           <div className="course-grid">
-            {courses.map((course) => (
-              <article key={course.id} className="course-card">
+            {courses.map((course, i) => (
+              <Reveal as="article" key={course.id} className="course-card" delay={(i % 3) * 80}>
                 <div className="course-card__icon" aria-hidden="true">
                   {course.icon || "🎓"}
                 </div>
@@ -83,7 +84,7 @@ export default function Courses() {
                 <p className="course-card__summary">{course.summary}</p>
                 <p className="course-card__description">{course.description}</p>
                 <p className="course-card__duration">{course.duration}</p>
-              </article>
+              </Reveal>
             ))}
           </div>
         )}

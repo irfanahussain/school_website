@@ -11,16 +11,16 @@ phone_validator=RegexValidator(
 
 class Course(models.Model):
     STAGE_CHOICES=[
-        ("primary","Primary"),
-        ("middle","Middle School"),
-        ("high","High School"),
+        ("primary","Foundation (Class 8-10)"),
+        ("middle","Class 11 & 12"),
+        ("high","Competitive / Dropper Batch"),
     ]
 
     title=models.CharField(max_length=120)
     stage=models.CharField(max_length=10,choices=STAGE_CHOICES)
     summary=models.CharField(max_length=280)
     description=models.TextField()
-    duration=models.CharField(max_length=60,help_text="e.g. 'Grades 6-8,full year'")
+    duration=models.CharField(max_length=60)
     icon=models.CharField(
         max_length=40,
         blank=True,
@@ -85,12 +85,12 @@ class AdmissionApplication(models.Model):
 
     student_name=models.CharField(max_length=150)
     date_of_birth=models.DateField()
-    grade_applying_for=models.CharField(max_length=2, choices=GRADE_CHOICES)
-    previous_school=models.CharField(max_length=200, blank=True)
+    grade_applying_for=models.CharField(max_length=2,choices=GRADE_CHOICES)
+    previous_school=models.CharField(max_length=200,blank=True)
 
     parent_name=models.CharField(max_length=150)
     parent_email=models.EmailField()
-    parent_phone=models.CharField(max_length=20, validators=[phone_validator])
+    parent_phone=models.CharField(max_length=20,validators=[phone_validator])
     address=models.TextField()
 
     additional_notes=models.TextField(blank=True)

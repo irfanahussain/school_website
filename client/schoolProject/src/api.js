@@ -1,12 +1,26 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const TOKEN_KEY = "softspire_token";
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setToken(token) {
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  else localStorage.removeItem(TOKEN_KEY);
+}
 
 async function request(path, options = {}) {
+  const token = getToken();
+  const headers = { "Content-Type": "application/json", ...options.headers };
+  if (token) headers.Authorization = `Token ${token}`;
+
   const res = await fetch(`${BASE_URL}/api${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers,
   });
 
-  const data = await res.json().catch(() => ({}));
+  const data = res.status === 204 ? {} : await res.json().catch(() => ({}));
 
   if (!res.ok) {
     const error = new Error("Request failed");
@@ -19,12 +33,12 @@ async function request(path, options = {}) {
 }
 
 export function getCourses(stage) {
-  const query = stage ? `?stage=${encodeURIComponent(stage)}` : "";
+  const query = stage ? `stage=${encodeURIComponent(stage)}` : "";
   return request(`/courses/${query}`);
 }
 
 export function getGalleryImages(category) {
-  const query = category ? `?category=${encodeURIComponent(category)}` : "";
+  const query = category ? `category=${encodeURIComponent(category)}` : "";
   return request(`/gallery/${query}`);
 }
 
@@ -40,4 +54,26 @@ export function submitAdmissionApplication(payload) {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function registerAccount(payload) {
+  return request(`/auth/register/`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function loginAccount(payload) {
+  return request(`/auth/login/`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function logoutAccount() {
+  return request(`/auth/logout/`, { method: "POST" });
+}
+
+export function fetchCurrentUser() {
+  return request(`/auth/me/`);
 }

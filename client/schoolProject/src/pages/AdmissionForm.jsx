@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { submitAdmissionApplication } from "../api.js";
 
-const GRADES = ["K", ...Array.from({ length: 12 }, (_, i) => String(i + 1))];
+const GRADES = Array.from({ length: 5 }, (_, i) => String(i + 8));
 
 const INITIAL_FORM = {
   student_name: "",
@@ -27,7 +27,7 @@ function validate(form) {
     if (dob >= today) errors.date_of_birth = "Date of birth must be in the past.";
   }
 
-  if (!form.grade_applying_for) errors.grade_applying_for = "Please select a grade.";
+  if (!form.grade_applying_for) errors.grade_applying_for = "Please select a class.";
 
   if (!form.parent_name.trim()) errors.parent_name = "Please enter a parent or guardian name.";
   if (!/^\S+@\S+\.\S+$/.test(form.parent_email)) {
@@ -81,11 +81,12 @@ export default function AdmissionForm() {
   if (status === "success") {
     return (
       <section className="page-header">
-        <p className="page-header__eyebrow">Admissions</p>
+        <p className="page-header__eyebrow eyebrow">Enrollment</p>
         <h1>Application received.</h1>
         <p className="page-header__lede">
-          Thank you for applying to Lemer Public School. Our admissions team will review the
-          application and reach out to the email address provided within 5 business days.
+          Thank you for applying to Softspire Learning. Our counselling team will review
+          your application and reach out to the email address provided within 5 business days to
+          schedule a free demo class.
         </p>
       </section>
     );
@@ -94,11 +95,11 @@ export default function AdmissionForm() {
   return (
     <>
       <section className="page-header">
-        <p className="page-header__eyebrow">Admissions</p>
-        <h1>Apply for the upcoming school year.</h1>
+        <p className="page-header__eyebrow eyebrow">Enrollment</p>
+        <h1>Enroll for the upcoming batch.</h1>
         <p className="page-header__lede">
-          Complete the form below to start a Lemer application. You'll be able to upload
-          transcripts and recommendation letters once our admissions team follows up.
+          Complete the form below to start your Softspire application. You'll be able to book a free
+          demo class and share previous mark sheets once our counselling team follows up.
         </p>
       </section>
 
@@ -140,17 +141,17 @@ export default function AdmissionForm() {
                 )}
               </div>
               <div>
-                <label htmlFor="grade_applying_for">Grade applying for</label>
+                <label htmlFor="grade_applying_for">Class / batch joining</label>
                 <select
                   id="grade_applying_for"
                   name="grade_applying_for"
                   value={form.grade_applying_for}
                   onChange={handleChange}
                 >
-                  <option value="">Select a grade</option>
+                  <option value="">Select a class</option>
                   {GRADES.map((g) => (
                     <option key={g} value={g}>
-                      {g === "K" ? "Kindergarten" : `Grade ${g}`}
+                      Class {g}
                     </option>
                   ))}
                 </select>
@@ -161,7 +162,7 @@ export default function AdmissionForm() {
             </div>
 
             <div className="form__row">
-              <label htmlFor="previous_school">Current or previous school (optional)</label>
+              <label htmlFor="previous_school">Current school / board (optional)</label>
               <input
                 id="previous_school"
                 name="previous_school"
@@ -236,13 +237,13 @@ export default function AdmissionForm() {
                 rows={4}
                 value={form.additional_notes}
                 onChange={handleChange}
-                placeholder="Learning support needs, scheduling constraints, siblings already enrolled, etc."
+                placeholder="Preferred batch timing, target exam year, siblings already enrolled, etc."
               />
             </div>
           </fieldset>
 
           <button type="submit" className="button button--primary" disabled={status === "submitting"}>
-            {status === "submitting" ? "Submitting…" : "Submit application"}
+            {status === "submitting" ? "Submitting…" : "Submit enrollment"}
           </button>
         </form>
       </section>

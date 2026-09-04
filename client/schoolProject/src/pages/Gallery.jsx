@@ -38,11 +38,11 @@ export default function Gallery() {
   return (
     <>
       <section className="page-header">
-        <p className="page-header__eyebrow">Life at Lemer</p>
+        <p className="page-header__eyebrow eyebrow">Life at Softspire</p>
         <h1>A look inside our classrooms and campus.</h1>
         <p className="page-header__lede">
-          Photos from the school year — classrooms, the garden, athletics, and the events that
-          bring the whole community together. Images are managed by staff through the Django
+          Photos from the academic year — classrooms, labs, test days, and the events that bring
+          our students and mentors together. Images are managed by staff through the Django
           admin.
         </p>
       </section>

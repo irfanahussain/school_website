@@ -1,77 +1,99 @@
+import Reveal from "../components/Reveal.jsx";
+
 const VALUES = [
   {
-    title: "Rigor with warmth",
-    body: "High expectations are paired with real relationships — teachers know students by name, strength, and struggle.",
+    title: "Concept clarity over rote learning",
+    body: "Every topic is taught to be understood, not memorised — because exam questions are built to catch memorisation, not understanding.",
   },
   {
-    title: "Learning by doing",
-    body: "Labs, studios, the garden, and the stage are where lessons get tested, not just where periods are spent.",
+    title: "Data-driven mentoring",
+    body: "Weekly tests feed into a rank and performance dashboard, so mentors know exactly where each student needs support before it becomes a gap.",
   },
   {
-    title: "A whole child, not a transcript",
-    body: "Advising, athletics, and the arts are treated as core to a Lemer education, not extras bolted onto it.",
+    title: "A student, not a roll number",
+    body: "Small batches mean faculty know each student's strengths, struggles, and target rank — advising is personal, not generic.",
   },
 ];
 
-const LEADERSHIP = [
-  { name: "Dr. Elena Marsh", role: "Head of School" },
-  { name: "James Okafor", role: "Dean of Academics" },
-  { name: "Priya Ramaswami", role: "Director of Admissions" },
-  { name: "Tom Whitfield", role: "Dean of Students" },
+const FACULTY = [
+  { name: "Dr. Suresh Kumar", role: "Director & Physics Mentor", subject: "20+ years, IIT alumnus" },
+  { name: "Dr. Anita Varghese", role: "Head of Biology", subject: "NEET specialist, ex-CBSE examiner" },
+  { name: "Vishnu Prasad", role: "Head of Mathematics", subject: "JEE Advanced specialist" },
+  { name: "Meera Krishnan", role: "Head of Chemistry", subject: "Organic & Physical Chemistry" },
 ];
 
 export default function About() {
   return (
     <>
       <section className="page-header">
-        <p className="page-header__eyebrow">About Lemer</p>
-        <h1>Nearly fifty years of educating the whole student.</h1>
+        <p className="page-header__eyebrow eyebrow">About Softspire</p>
+        <h1>Eighteen years of turning exam preparation into results.</h1>
         <p className="page-header__lede">
-          Founded in 1998 by a small group of teachers who wanted a school built around
-          curiosity rather than compliance, Lemer Public School now serves close to 500 students
-          from Kindergarten through Grade 12 in Triprayar, Thrissur.
+          Founded in 2007 by a group of IIT and medical-college alumni who wanted coaching built
+          around understanding rather than drilling, Softspire Learning now mentors close to
+          2,000 students a year across NEET, JEE, Foundation and CUET programs from our Kozhikode
+          campus.
         </p>
       </section>
 
       <section className="section split">
-        <div>
+        <Reveal as="div">
           <h2 className="section__heading">Our mission</h2>
           <p>
-            We prepare students to think clearly, work hard, and treat other people well. That
-            means a demanding academic core, taught by faculty who stay long enough to become
-            mentors, inside a community small enough that no student goes unnoticed.
+            We prepare students to think clearly under pressure and solve problems the way exams
+            actually test them. That means concept-first teaching, weekly performance tracking,
+            and mentors who stay close enough to catch a struggling student early.
           </p>
-        </div>
-        <div>
+        </Reveal>
+        <Reveal as="div" delay={100}>
           <h2 className="section__heading">Our campus</h2>
           <p>
-            Our Triprayar campus holds six academic buildings, two science labs, a hall for
-            performing arts, athletic fields, and open grounds used daily for outdoor
-            education across every grade.
+            Our Kozhikode campus holds dedicated classrooms for NEET, JEE and Foundation batches,
+            a physics and chemistry demonstration lab, a digital learning center for recorded
+            revision sessions, and a full-time doubt-clearing desk open through the week.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       <section className="section">
-        <h2 className="section__heading">What we value</h2>
+        <Reveal as="div" className="section__head">
+          <div>
+            <p className="eyebrow">What we value</p>
+            <h2 className="section__heading">The Softspire approach</h2>
+          </div>
+        </Reveal>
         <div className="highlights">
-          {VALUES.map((item) => (
-            <article key={item.title} className="highlights__card">
+          {VALUES.map((item, i) => (
+            <Reveal as="article" key={item.title} className="highlights__card" delay={i * 80}>
               <h3>{item.title}</h3>
               <p>{item.body}</p>
-            </article>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="section">
-        <h2 className="section__heading">School leadership</h2>
+        <Reveal as="div" className="section__head">
+          <div>
+            <p className="eyebrow">Meet the mentors</p>
+            <h2 className="section__heading">Faculty who've walked the path</h2>
+          </div>
+        </Reveal>
         <div className="leadership">
-          {LEADERSHIP.map((person) => (
-            <div key={person.name} className="leadership__card">
+          {FACULTY.map((person, i) => (
+            <Reveal as="div" key={person.name} className="leadership__card" delay={i * 80}>
+              <span className="leadership__avatar" aria-hidden="true">
+                {person.name
+                  .split(" ")
+                  .filter((w) => w !== "Dr.")
+                  .map((n) => n[0])
+                  .slice(0, 2)
+                  .join("")}
+              </span>
               <span className="leadership__name">{person.name}</span>
               <span className="leadership__role">{person.role}</span>
-            </div>
+              <p className="leadership__subject">{person.subject}</p>
+            </Reveal>
           ))}
         </div>
       </section>

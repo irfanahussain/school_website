@@ -1,12 +1,20 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions,status
 from .models import AdmissionApplication, ContactMessage, Course, GalleryImage
+from django.contrib.auth import authenticate, get_user_model
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .serializers import (
     AdmissionApplicationSerializer,
     ContactMessageSerializer,
     CourseSerializer,
     GalleryImageSerializer,
+    RegisterSerializer,
+    UserSerializer,
 )
+User = get_user_model()
 
 # Create your views here.
 
@@ -43,3 +51,48 @@ class AdmissionApplicationCreateView(generics.CreateAPIView):
     queryset=AdmissionApplication.objects.all()
     serializer_class=AdmissionApplicationSerializer
     permission_classes=[permissions.AllowAny]
+
+class RegisterView(APIView):
+    permission_classes=[permissions.AllowAny]
+
+    def post(self,request):
+        serializer=RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user=serializer.save()
+        token,_=Token.objects.get_or_create(user=user)
+        return Response(
+            {"token":token.key,"user":UserSerializer(user).data},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class LoginView(APIView):
+    permission_classes=[permissions.AllowAny]
+
+    def post(self,request):
+        email=(request.data.get("email") or "").strip().lower()
+        password=request.data.get("password") or ""
+        user=authenticate(request,username=email,password=password)
+        if user is None:
+            return Response(
+                {"detail":"Invalid email or password."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        token,_=Token.objects.get_or_create(user=user)
+        return Response({"token":token.key,"user":UserSerializer(user).data})
+
+
+class LogoutView(APIView):
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request):
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MeView(APIView):
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request):
+        return Response(UserSerializer(request.user).data)
+

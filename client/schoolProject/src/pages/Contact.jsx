@@ -46,21 +46,21 @@ export default function Contact() {
   return (
     <>
       <section className="page-header">
-        <p className="page-header__eyebrow">Get in touch</p>
+        <p className="page-header__eyebrow eyebrow">Get in touch</p>
         <h1>We'd love to hear from you.</h1>
         <p className="page-header__lede">
-          Questions about admissions, a campus visit, or anything else — send us a message and
-          our team will get back to you within one business day.
+          Questions about a course, a free demo class, or anything else — send us a message and
+          our counselling team will get back to you within one business day.
         </p>
       </section>
 
       <section className="section split">
         <div className="contact-info">
           <h2 className="section__heading">Visit or write</h2>
-          <p>Triprayar<br />Thrissur, Kerala, India</p>
+          <p>Mavoor Road<br />Kozhikode, Kerala, India</p>
           <p>+91 98765 43210</p>
-          <p>admissions@lemerpublicschool.edu</p>
-          <p className="contact-info__hours">Monday – Friday, 7:30am – 4:00pm</p>
+          <p>admissions@softspirelearning.in</p>
+          <p className="contact-info__hours">Monday – Saturday, 8:00am – 7:00pm</p>
         </div>
 
         <form className="form" onSubmit={handleSubmit} noValidate>
