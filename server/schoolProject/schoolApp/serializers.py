@@ -1,15 +1,16 @@
 from datetime import date
-from rest_framework import serializers
-from .models import AdmissionApplication,ContactMessage,Course,GalleryImage
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from rest_framework import serializers
+from .models import AdmissionApplication,ContactMessage,Course,GalleryImage
 
 User=get_user_model()
+
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model=Course
-        fields=["id","title","stage","summary","description","duration","icon"]
+        fields=["id","title","stage","summary","description","duration","image"]
 
 
 class GalleryImageSerializer(serializers.ModelSerializer):
@@ -36,7 +37,7 @@ class AdmissionApplicationSerializer(serializers.ModelSerializer):
         fields = [
             "id","student_name","date_of_birth","grade_applying_for","previous_school","parent_name","parent_email","parent_phone","address","additional_notes","status","submitted_at",
         ]
-        read_only_fields=["id","status","submitted_at"]
+        read_only_fields=["id", "status", "submitted_at"]
 
     def validate_date_of_birth(self,value):
         if value>=date.today():
@@ -45,6 +46,7 @@ class AdmissionApplicationSerializer(serializers.ModelSerializer):
         if age>19:
             raise serializers.ValidationError("Please check the date of birth entered.")
         return value
+
 
 class UserSerializer(serializers.ModelSerializer):
     full_name=serializers.SerializerMethodField()

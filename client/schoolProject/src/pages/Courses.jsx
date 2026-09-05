@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getCourses } from "../api.js";
 import Reveal from "../components/Reveal.jsx";
 
@@ -8,11 +9,27 @@ const STAGES = [
   { value: "middle", label: "Class 11 & 12" },
   { value: "high", label: "Competitive & Dropper" },
 ];
+const STAGE_VALUES = STAGES.map((s) => s.value);
+
+export const FALLBACK_IMAGE = {
+  primary: "/course-foundation.svg",
+  middle: "/course-middle.svg",
+  high: "/course-high.svg",
+};
 
 export default function Courses() {
-  const [stage, setStage] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialStage = STAGE_VALUES.includes(searchParams.get("stage"))
+    ? searchParams.get("stage")
+    : "";
+  const [stage, setStage] = useState(initialStage);
   const [courses, setCourses] = useState([]);
   const [status, setStatus] = useState("loading");
+
+  function selectStage(value) {
+    setStage(value);
+    setSearchParams(value ? { stage: value } : {}, { replace: true });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -53,7 +70,7 @@ export default function Courses() {
               role="tab"
               aria-selected={stage === s.value}
               className={"tabs__button" + (stage === s.value ? " tabs__button--active" : "")}
-              onClick={() => setStage(s.value)}
+              onClick={() => selectStage(s.value)}
             >
               {s.label}
             </button>
@@ -63,11 +80,10 @@ export default function Courses() {
         {status === "loading" && <p className="state-message">Loading courses…</p>}
 
         {status === "error" && (
-          <p className="state-message state-message--error">
-            We couldn't reach the course catalog right now. Please check that the backend API is
-            running, or try again shortly.
-          </p>
-        )}
+  <p className="state-message state-message--error">
+    We couldn't load the course catalog right now. Please try again shortly.
+  </p>
+)}
 
         {status === "ready" && courses.length === 0 && (
           <p className="state-message">No courses found for this category yet.</p>
@@ -77,13 +93,16 @@ export default function Courses() {
           <div className="course-grid">
             {courses.map((course, i) => (
               <Reveal as="article" key={course.id} className="course-card" delay={(i % 3) * 80}>
-                <div className="course-card__icon" aria-hidden="true">
-                  {course.icon || "🎓"}
+                <img
+                  className="course-card__image"
+                  src={course.image || FALLBACK_IMAGE[course.stage] || "/course-foundation.svg"}
+                  alt={course.title}
+                />
+                <div className="course-card__body">
+                  <h3>{course.title}</h3>
+                  <p className="course-card__summary">{course.summary}</p>
+                  <p className="course-card__duration">{course.duration}</p>
                 </div>
-                <h3>{course.title}</h3>
-                <p className="course-card__summary">{course.summary}</p>
-                <p className="course-card__description">{course.description}</p>
-                <p className="course-card__duration">{course.duration}</p>
               </Reveal>
             ))}
           </div>

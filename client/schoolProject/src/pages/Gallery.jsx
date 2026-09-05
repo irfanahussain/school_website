@@ -41,10 +41,9 @@ export default function Gallery() {
         <p className="page-header__eyebrow eyebrow">Life at Softspire</p>
         <h1>A look inside our classrooms and campus.</h1>
         <p className="page-header__lede">
-          Photos from the academic year — classrooms, labs, test days, and the events that bring
-          our students and mentors together. Images are managed by staff through the Django
-          admin.
-        </p>
+  Photos from the academic year-classrooms, labs, test days,and the events that bring
+  our students and mentors together.
+</p>
       </section>
 
       <section className="section">
@@ -65,18 +64,14 @@ export default function Gallery() {
         {status === "loading" && <p className="state-message">Loading photos…</p>}
 
         {status === "error" && (
-          <p className="state-message state-message--error">
-            We couldn't load the gallery right now. Please check that the backend API is running,
-            or try again shortly.
-          </p>
-        )}
+  <p className="state-message state-message--error">
+    We couldn't load the gallery right now. Please try again shortly.
+  </p>
+)}
 
         {status === "ready" && images.length === 0 && (
-          <p className="state-message">
-            No photos in this category yet. Add some through the Django admin at
-            <code> /admin/core/galleryimage/</code>.
-          </p>
-        )}
+  <p className="state-message">No photos in this category yet. Check back soon.</p>
+)}
 
         {status === "ready" && images.length > 0 && (
           <div className="gallery-grid">

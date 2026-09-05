@@ -1,45 +1,39 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCourses } from "../api.js";
+import { FALLBACK_IMAGE } from "./Courses.jsx";
 import Reveal from "../components/Reveal.jsx";
 import AnimatedCounter from "../components/AnimatedCounter.jsx";
 
-const CATEGORIES = [
-  {
-    icon: "🧬",
-    title: "NEET Coaching",
-    body: "Biology, Physics and Chemistry mastery for future doctors, with weekly NCERT-based tests.",
-  },
-  {
-    icon: "🧮",
-    title: "JEE Main & Advanced",
-    body: "Concept-first Physics, Chemistry and Maths, built around real JEE problem patterns.",
-  },
-  {
-    icon: "📘",
-    title: "Foundation Program",
-    body: "Class 8-10 groundwork that builds reasoning skills early for future entrance exams.",
-  },
-  {
-    icon: "🎯",
-    title: "CUET & Board Combo",
-    body: "Board exam strength paired with focused CUET practice for top university admissions.",
-  },
-];
-
 const HIGHLIGHTS = [
   {
-    icon: "👩‍🏫",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 3l8 4.5v3c0 4.5-3.4 8.7-8 9.9-4.6-1.2-8-5.4-8-9.9v-3L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
     title: "Mentors, not just teachers",
     body: "Every batch is led by subject-expert faculty who track each student's progress personally, not just the class average.",
   },
   {
-    icon: "📊",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 20V10M12 20V4M20 20v-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
     title: "Weekly tests & analytics",
     body: "Structured test series with rank-wise performance reports so students and parents always know where they stand.",
   },
   {
-    icon: "🧑‍🤝‍🧑",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="8.5" cy="8" r="2.8" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="16" cy="9" r="2.2" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M3.5 19c0-3 2.3-5 5-5s5 2 5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M13.5 14.3c2.3.2 4 2.1 4 4.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    ),
     title: "Small, focused batches",
     body: "Batch sizes are kept small on purpose, so doubts get cleared in the room — not left for later.",
   },
@@ -94,17 +88,17 @@ export default function Home() {
     <>
       <section className="hero">
         <div className="hero__text">
-          <p className="hero__eyebrow eyebrow">NEET · JEE · Foundation · CUET</p>
-          <h1>Aim high. Achieve more. Learn with mentors who track every rank.</h1>
+          <p className="hero__eyebrow eyebrow">For NEET, JEE, Foundation & CUET aspirants</p>
+          <h1>Rise higher with <span className="text-brand hero__glow">mentors who track every rank</span>.</h1>
           <p className="hero__lede">
-            Apex Learning Institute pairs concept-first teaching with weekly test analytics and
+            Softspire Learning pairs concept-first teaching with weekly test analytics and
             small, focused batches — so students walk into exam day prepared, not just practiced.
           </p>
           <div className="hero__actions">
             <Link to="/courses" className="button button--primary">
               Explore Courses
             </Link>
-            <Link to="/admissions" className="button button--ghost">
+            <Link to="/admissions" className="button button--primary">
               Book a Free Demo Class
             </Link>
           </div>
@@ -123,24 +117,29 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="hero__panel" aria-hidden="true">
-          <div className="hero__panel-grid">
-            <span>🧬 NEET</span>
-            <span>🧮 JEE Main</span>
-            <span>⚙️ JEE Advanced</span>
-            <span>📘 Foundation</span>
-            <span>🎯 CUET</span>
-            <span>🚀 Dropper Batch</span>
-          </div>
-          <div className="hero__floating-card">
-            <span className="hero__floating-card-icon">🏆</span>
-            <div>
-              <span className="hero__floating-card-value">98% Result Rate</span>
-              <p className="hero__floating-card-label">Across all batches, 2025</p>
-            </div>
-          </div>
+        <div className="hero__visual">
+          <img
+            src="/hero-illustration.svg"
+            alt="Student studying at a desk"
+            className="hero__image"
+          />
         </div>
       </section>
+
+      <div className="marquee" aria-label="Programs we coach for">
+        <div className="marquee__track">
+          {[0, 1].flatMap((set) =>
+            ["NEET", "JEE Main", "JEE Advanced", "Foundation (8–10)", "CUET", "Dropper Batch"].map(
+              (item) => (
+                <span className="marquee__item" key={`${set}-${item}`} aria-hidden={set === 1 || undefined}>
+                  <span className="marquee__dot" />
+                  {item}
+                </span>
+              )
+            )
+          )}
+        </div>
+      </div>
 
       <section className="section stats" style={{ paddingTop: "2.5rem" }}>
         <div className="stats__grid">
@@ -150,26 +149,6 @@ export default function Home() {
                 <AnimatedCounter value={stat.value} suffix={stat.suffix} />
               </span>
               <p className="stats__label">{stat.label}</p>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section className="section">
-        <Reveal as="div" className="section__head">
-          <div>
-            <p className="eyebrow">Programs</p>
-            <h2 className="section__heading">Exam categories we coach for</h2>
-          </div>
-        </Reveal>
-        <div className="categories">
-          {CATEGORIES.map((cat, i) => (
-            <Reveal as="article" key={cat.title} className="category-card" delay={i * 80}>
-              <div className="category-card__icon" aria-hidden="true">
-                {cat.icon}
-              </div>
-              <h3>{cat.title}</h3>
-              <p>{cat.body}</p>
             </Reveal>
           ))}
         </div>
@@ -189,12 +168,16 @@ export default function Home() {
           <div className="course-grid">
             {courses.map((course, i) => (
               <Reveal as="article" key={course.id} className="course-card" delay={i * 80}>
-                <div className="course-card__icon" aria-hidden="true">
-                  {course.icon || "🎓"}
+                <img
+                  className="course-card__image"
+                  src={course.image || FALLBACK_IMAGE[course.stage] || "/course-foundation.svg"}
+                  alt={course.title}
+                />
+                <div className="course-card__body">
+                  <h3>{course.title}</h3>
+                  <p className="course-card__summary">{course.summary}</p>
+                  <p className="course-card__duration">{course.duration}</p>
                 </div>
-                <h3>{course.title}</h3>
-                <p className="course-card__summary">{course.summary}</p>
-                <p className="course-card__duration">{course.duration}</p>
               </Reveal>
             ))}
           </div>
@@ -204,8 +187,8 @@ export default function Home() {
       <section className="section">
         <Reveal as="div" className="section__head">
           <div>
-            <p className="eyebrow">Why Apex</p>
-            <h2 className="section__heading">Why families choose Apex Learning Institute</h2>
+            <p className="eyebrow">Why Softspire</p>
+            <h2 className="section__heading">Why families choose <span className="text-brand">Softspire Learning</span></h2>
           </div>
         </Reveal>
         <div className="highlights">
@@ -225,7 +208,7 @@ export default function Home() {
         <Reveal as="div" className="section__head">
           <div>
             <p className="eyebrow">Success stories</p>
-            <h2 className="section__heading">What our students say</h2>
+            <h2 className="section__heading">What our <span className="text-brand">students</span> say</h2>
           </div>
         </Reveal>
         <div className="testimonials">

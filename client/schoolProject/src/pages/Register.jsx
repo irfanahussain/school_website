@@ -50,17 +50,14 @@ export default function Register() {
 
   return (
     <>
-      <section className="page-header">
-        <p className="page-header__eyebrow eyebrow">Join Softspire</p>
-        <h1>Create your Softspire account.</h1>
-        <p className="page-header__lede">
-          Sign up to track your admission status and get updates from your mentors.
-        </p>
+      <section className="page-header page-header--plain">
+        <h1>Create an account</h1>
+        <p className="page-header__lede">It only takes a minute.</p>
       </section>
 
       <section className="section auth-section">
         <form className="form form--narrow" onSubmit={handleSubmit} noValidate>
-          {serverError && <p className="form_banner form_banner--error">{serverError}</p>}
+          {serverError && <p className="form__banner form__banner--error">{serverError}</p>}
 
           <div className="form__row">
             <label htmlFor="fullName">Full name</label>

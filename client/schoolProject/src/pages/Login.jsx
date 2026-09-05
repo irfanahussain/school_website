@@ -48,18 +48,14 @@ export default function Login() {
 
   return (
     <>
-      <section className="page-header">
-        <p className="page-header__eyebrow eyebrow">Welcome back</p>
-        <h1>Log in to your Softspire account.</h1>
-        <p className="page-header__lede">
-          Track your admission status, saved courses, and updates from your mentors — all in one
-          place.
-        </p>
+      <section className="page-header page-header--plain">
+        <h1>Log in to your account</h1>
+        <p className="page-header__lede">Enter your email and password to continue.</p>
       </section>
 
       <section className="section auth-section">
         <form className="form form--narrow" onSubmit={handleSubmit} noValidate>
-          {serverError && <p className="form_banner form_banner--error">{serverError}</p>}
+          {serverError && <p className="form__banner form__banner--error">{serverError}</p>}
 
           <div className="form__row">
             <label htmlFor="email">Email</label>

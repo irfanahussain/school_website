@@ -21,11 +21,7 @@ class Course(models.Model):
     summary=models.CharField(max_length=280)
     description=models.TextField()
     duration=models.CharField(max_length=60)
-    icon=models.CharField(
-        max_length=40,
-        blank=True,
-        help_text="Optional short label or emoji shown next to the course card.",
-    )
+    image=models.ImageField(upload_to="courses/",blank=True,null=True)
     order=models.PositiveIntegerField(default=0)
 
     class Meta:

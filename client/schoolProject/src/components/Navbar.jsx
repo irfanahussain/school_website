@@ -21,6 +21,7 @@ export default function Navbar() {
   const { user, status, logout } = useAuth();
   const navigate = useNavigate();
 
+  // Close the mobile menu automatically if the viewport is resized back to desktop.
   useEffect(() => {
     function handleResize() {
       if (window.innerWidth > 860) setOpen(false);
@@ -69,7 +70,7 @@ export default function Navbar() {
               to={link.to}
               end={link.to === "/"}
               className={({ isActive }) =>
-                "navbar_link" + (isActive ? " navbar_link--active" : "")
+                "navbar__link" + (isActive ? " navbar__link--active" : "")
               }
               onClick={() => setOpen(false)}
             >
@@ -77,6 +78,7 @@ export default function Navbar() {
             </NavLink>
           ))}
 
+          {/* Quick category shortcuts — shown only in the mobile menu. */}
           <div className="navbar__categories">
             <p className="navbar__categories-heading">Popular categories</p>
             {CATEGORIES.map((cat) => (
@@ -90,19 +92,14 @@ export default function Navbar() {
             {status === "ready" && user ? (
               <>
                 <span className="navbar__greeting">Hi, {user.full_name}</span>
-                <button type="button" className="navbar_link navbar_link--button" onClick={handleLogout}>
+                <button type="button" className="navbar__link navbar__link--button" onClick={handleLogout}>
                   Log out
                 </button>
               </>
             ) : (
-              <>
-                <NavLink to="/login" className="navbar__link" onClick={() => setOpen(false)}>
-                  Log in
-                </NavLink>
-                <NavLink to="/register" className="navbar__link" onClick={() => setOpen(false)}>
-                  Register
-                </NavLink>
-              </>
+              <NavLink to="/login" className="navbar__link" onClick={() => setOpen(false)}>
+                Log in
+              </NavLink>
             )}
           </div>
 
