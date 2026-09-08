@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { getCourses } from "../api.js";
+import { useSearchParams, Link } from "react-router-dom";
+import { getCourses, getMyCourses, enrollInCourse, unenrollFromCourse } from "../api.js";
+import { useAuth } from "../AuthContext.jsx";
 import Reveal from "../components/Reveal.jsx";
 
 const STAGES = [
@@ -18,6 +19,7 @@ export const FALLBACK_IMAGE = {
 };
 
 export default function Courses() {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialStage = STAGE_VALUES.includes(searchParams.get("stage"))
     ? searchParams.get("stage")
@@ -25,6 +27,8 @@ export default function Courses() {
   const [stage, setStage] = useState(initialStage);
   const [courses, setCourses] = useState([]);
   const [status, setStatus] = useState("loading");
+  const [enrolledIds, setEnrolledIds] = useState(new Set());
+  const [pendingId, setPendingId] = useState(null);
 
   function selectStage(value) {
     setStage(value);
@@ -50,6 +54,43 @@ export default function Courses() {
       cancelled = true;
     };
   }, [stage]);
+
+  useEffect(() => {
+    if (!user) {
+      setEnrolledIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    getMyCourses()
+      .then((data) => {
+        if (!cancelled) setEnrolledIds(new Set(data.map((e) => e.course.id)));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  async function handleEnrollToggle(courseId) {
+    setPendingId(courseId);
+    try {
+      if (enrolledIds.has(courseId)) {
+        await unenrollFromCourse(courseId);
+        setEnrolledIds((prev) => {
+          const next = new Set(prev);
+          next.delete(courseId);
+          return next;
+        });
+      } else {
+        await enrollInCourse(courseId);
+        setEnrolledIds((prev) => new Set(prev).add(courseId));
+      }
+    } catch {
+      // Request failed — leave the button in its previous state.
+    } finally {
+      setPendingId(null);
+    }
+  }
 
   return (
     <>
@@ -79,12 +120,6 @@ export default function Courses() {
 
         {status === "loading" && <p className="state-message">Loading courses…</p>}
 
-        {status === "error" && (
-  <p className="state-message state-message--error">
-    We couldn't load the course catalog right now. Please try again shortly.
-  </p>
-)}
-
         {status === "ready" && courses.length === 0 && (
           <p className="state-message">No courses found for this category yet.</p>
         )}
@@ -102,6 +137,31 @@ export default function Courses() {
                   <h3>{course.title}</h3>
                   <p className="course-card__summary">{course.summary}</p>
                   <p className="course-card__duration">{course.duration}</p>
+                  <div className="course-card__action">
+                    {!user ? (
+                      <Link to="/login" state={{ from: "/courses" }} className="button button--ghost button--sm">
+                        Log in to enroll
+                      </Link>
+                    ) : enrolledIds.has(course.id) ? (
+                      <button
+                        type="button"
+                        className="button button--ghost button--sm"
+                        onClick={() => handleEnrollToggle(course.id)}
+                        disabled={pendingId === course.id}
+                      >
+                        {pendingId === course.id ? "Removing…" : "Enrolled ✓ — remove"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="button button--primary button--sm"
+                        onClick={() => handleEnrollToggle(course.id)}
+                        disabled={pendingId === course.id}
+                      >
+                        {pendingId === course.id ? "Enrolling…" : "Enroll"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </Reveal>
             ))}

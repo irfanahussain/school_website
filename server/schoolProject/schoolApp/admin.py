@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdmissionApplication,ContactMessage,Course,GalleryImage
+from .models import AdmissionApplication,ContactMessage,Course,GalleryImage,Enrollment,Profile
 
 
 @admin.register(Course)
@@ -29,3 +29,15 @@ class AdmissionApplicationAdmin(admin.ModelAdmin):
     list_filter=("status","grade_applying_for")
     search_fields=("student_name","parent_name","parent_email")
     readonly_fields=("submitted_at",)
+
+@admin.register(Enrollment)
+class EnrollmentAdmin(admin.ModelAdmin):
+    list_display=("student","course","enrolled_at")
+    list_filter=("course",)
+    search_fields=("student__email","student__username","course__title")
+    readonly_fields=("enrolled_at",)
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display=("user","avatar")
+    search_fields=("user_email","user_username")

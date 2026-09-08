@@ -36,7 +36,7 @@ export default function Register() {
     setServerError("");
     try {
       await register(form.fullName, form.email, form.password);
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setStatus("idle");
       const data = err?.data || {};

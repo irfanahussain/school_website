@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.core.validators import RegexValidator
 # Create your models here.
@@ -99,3 +100,35 @@ class AdmissionApplication(models.Model):
 
     def __str__(self):
         return f"{self.student_name} (Grade {self.grade_applying_for})"
+
+
+    
+class Enrollment(models.Model):
+    student=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name="enrollments")
+    course=models.ForeignKey(Course,on_delete=models.CASCADE,related_name="enrollments")
+    enrolled_at=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering=["-enrolled_at"]
+        unique_together=("student","course")
+
+    def __str__(self):
+        return f"{self.student} → {self.course}"
+
+
+class Profile(models.Model):
+    user=models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name="profile")
+    avatar=models.ImageField(upload_to="avatars/",blank=True,null=True)
+
+    def _str_(self):
+        return f"{self.user}'s profile"
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+@receiver(post_save,sender=settings.AUTH_USER_MODEL)
+def create_user_profile(sender,instance,created,**kwargs):
+    if created:
+        Profile.objects.get_or_create(user=instance)

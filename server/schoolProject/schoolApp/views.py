@@ -1,6 +1,7 @@
 from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, permissions,status
-from .models import AdmissionApplication, ContactMessage, Course, GalleryImage
+from .models import AdmissionApplication, ContactMessage, Course, GalleryImage,Enrollment,Profile
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
@@ -13,6 +14,8 @@ from .serializers import (
     GalleryImageSerializer,
     RegisterSerializer,
     UserSerializer,
+    EnrollmentSerializer,
+    EnrollRequestSerializer,
 )
 User = get_user_model()
 
@@ -95,4 +98,44 @@ class MeView(APIView):
 
     def get(self,request):
         return Response(UserSerializer(request.user).data)
+
+    def patch(self,request):
+        avatar=request.FILES.get("avatar")
+        if not avatar:
+            return Response(
+                {"avatar":["No file was submitted."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        profile,_=Profile.objects.get_or_create(user=request.user)
+        profile.avatar=avatar
+        profile.save()
+        return Response(UserSerializer(request.user,context={"request":request}).data)
+
+
+
+
+class MyCoursesView(generics.ListAPIView):
+    serializer_class=EnrollmentSerializer
+    permission_classes=[IsAuthenticated]
+
+    def get_queryset(self):
+        return Enrollment.objects.filter(student=self.request.user).select_related("course")
+
+class EnrollView(APIView):
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request):
+        serializer=EnrollRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        course=get_object_or_404(Course,id=serializer.validated_data["course_id"])
+        enrollment,created=Enrollment.objects.get_or_create(student=request.user,course=course)
+        return Response(
+            EnrollmentSerializer(enrollment).data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+    def delete(self,request):
+        course_id=request.data.get("course_id")
+        Enrollment.objects.filter(student=request.user,course_id=course_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 

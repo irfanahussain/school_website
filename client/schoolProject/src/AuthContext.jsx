@@ -6,6 +6,7 @@ import {
   logoutAccount,
   registerAccount,
   setToken,
+  uploadAvatar,
 } from "./api.js";
 
 const AuthContext = createContext(null);
@@ -49,8 +50,16 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  async function updateAvatar(file) {
+    const updatedUser = await uploadAvatar(file);
+    setUser(updatedUser);
+    return updatedUser;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, status, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, status, login, register, logout, updateAvatar }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -65,7 +65,7 @@ export default function Gallery() {
 
         {status === "error" && (
   <p className="state-message state-message--error">
-    We couldn't load the gallery right now. Please try again shortly.
+    
   </p>
 )}
 

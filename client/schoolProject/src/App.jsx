@@ -10,6 +10,11 @@ import Contact from "./pages/Contact.jsx";
 import AdmissionForm from "./pages/AdmissionForm.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
+import StudentLayout from "./components/StudentLayout.jsx";
+import Dashboard from "./pages/student/Dashboard.jsx";
+import StudentCourses from "./pages/student/StudentCourses.jsx";
+import Profile from "./pages/student/Profile.jsx";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -34,6 +39,19 @@ export default function App() {
           <Route path="/admissions" element={<AdmissionForm />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <StudentLayout />
+              </RequireAuth>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="courses" element={<StudentCourses />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
         </Routes>
       </main>
       <Footer />

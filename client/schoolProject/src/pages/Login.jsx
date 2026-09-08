@@ -15,7 +15,7 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectTo = location.state?.from || "/";
+  const redirectTo = location.state?.from || "/dashboard";
 
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});

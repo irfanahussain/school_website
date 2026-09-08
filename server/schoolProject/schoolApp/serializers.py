@@ -2,7 +2,7 @@ from datetime import date
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import AdmissionApplication,ContactMessage,Course,GalleryImage
+from .models import AdmissionApplication,ContactMessage,Course,GalleryImage,Enrollment,Profile
 
 User=get_user_model()
 
@@ -57,12 +57,57 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_full_name(self,obj):
         return obj.first_name or obj.email.split("@")[0]
+    def get_avatar(self,obj):
+        profile=Profile.objects.filter(user=obj).first()
+        if not profile or not profile.avatar:
+            return None
+        request=self.context.get("request")
+        url=profile.avatar.url
+        return request.build_absolute_uri(url) if request else url
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     email=serializers.EmailField()
     password=serializers.CharField(write_only=True,min_length=8)
     full_name=serializers.CharField(write_only=True,max_length=150)
+
+    class Meta:
+        model=User
+        fields=["email","password","full_name"]
+
+    def validate_email(self,value):
+        value=value.strip().lower()
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return value
+
+    def validate_password(self,value):
+        validate_password(value)
+        return value
+
+    def create(self,validated_data):
+        full_name=validated_data.pop("full_name").strip()
+        email=validated_data["email"]
+        user=User(username=email,email=email,first_name=full_name)
+        user.set_password(validated_data["password"])
+        user.save()
+        return user
+    
+class EnrollmentSerializer(serializers.ModelSerializer):
+    course=CourseSerializer(read_only=True)
+
+    class Meta:
+        model=Enrollment
+        fields=["id","course","enrolled_at"]
+
+class EnrollRequestSerializer(serializers.Serializer):
+    course_id=serializers.IntegerField()
+
+    def validate_course_id(self,value):
+        if not Course.objects.filter(id=value).exists():
+            raise serializers.ValidationError("This course doesn't exist.")
+        return value
+    
 
     class Meta:
         model=User

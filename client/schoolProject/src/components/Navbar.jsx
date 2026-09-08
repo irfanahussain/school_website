@@ -91,7 +91,9 @@ export default function Navbar() {
           <div className="navbar__auth">
             {status === "ready" && user ? (
               <>
-                <span className="navbar__greeting">Hi, {user.full_name}</span>
+                <NavLink to="/dashboard" className="navbar__link" onClick={() => setOpen(false)}>
+                  Dashboard
+                </NavLink>
                 <button type="button" className="navbar__link navbar__link--button" onClick={handleLogout}>
                   Log out
                 </button>
