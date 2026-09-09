@@ -37,6 +37,10 @@ export function getCourses(stage) {
   return request(`/courses/${query}`);
 }
 
+export function getCourseDetail(id) {
+  return request(`/courses/${id}/`);
+}
+
 export function getGalleryImages(category) {
   const query = category ? `category=${encodeURIComponent(category)}` : "";
   return request(`/gallery/${query}`);
@@ -120,4 +124,39 @@ export function unenrollFromCourse(courseId) {
     method: "DELETE",
     body: JSON.stringify({ course_id: courseId }),
   });
+}
+
+export function getCourseLearn(courseId) {
+  return request(`/courses/${courseId}/learn/`);
+}
+
+export function markLessonComplete(lessonId) {
+  return request(`/lessons/${lessonId}/complete/`, { method: "POST" });
+}
+
+export function markLessonIncomplete(lessonId) {
+  return request(`/lessons/${lessonId}/complete/`, { method: "DELETE" });
+}
+
+export async function downloadLessonFile(url, filename) {
+  const token = getToken();
+  const headers = {};
+  if (token) headers.Authorization = `Token ${token}`;
+
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    const error = new Error("Download failed");
+    error.status = res.status;
+    throw error;
+  }
+
+  const blob = await res.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = filename || "download";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
 }

@@ -2,7 +2,7 @@ from datetime import date
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import AdmissionApplication,ContactMessage,Course,GalleryImage,Enrollment,Profile
+from .models import AdmissionApplication,ContactMessage,Course,GalleryImage,Enrollment,Profile,Lesson,Subject,LessonFile,LessonProgress
 
 User=get_user_model()
 
@@ -10,7 +10,91 @@ User=get_user_model()
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model=Course
-        fields=["id","title","stage","summary","description","duration","image"]
+        fields=["id","title","stage","summary","description","duration","image","price"]
+
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Lesson
+        fields=["id","title","order"]
+
+
+class SubjectSerializer(serializers.ModelSerializer):
+    lessons=LessonSerializer(many=True,read_only=True)
+
+    class Meta:
+        model=Subject
+        fields=["id","title","order","lessons"]
+
+
+class CourseDetailSerializer(serializers.ModelSerializer):
+    subjects=SubjectSerializer(many=True,read_only=True)
+
+    class Meta:
+        model=Course
+        fields=[
+            "id","title","stage","summary","description","duration","image",
+            "price","features","requirements","subjects",
+        ]
+
+
+class LessonFileSerializer(serializers.ModelSerializer):
+    download_url=serializers.SerializerMethodField()
+
+    class Meta:
+        model=LessonFile
+        fields=["id","label","order","download_url"]
+
+    def get_download_url(self,obj):
+        request=self.context.get("request")
+        path=f"/api/lesson-files/{obj.id}/download/"
+        return request.build_absolute_uri(path) if request else path
+
+
+class LessonLearnSerializer(serializers.ModelSerializer):
+    files=LessonFileSerializer(many=True,read_only=True)
+    completed=serializers.SerializerMethodField()
+
+    class Meta:
+        model=Lesson
+        fields=["id","title","order","youtube_url","files","completed"]
+
+    def get_completed(self,obj):
+        completed_ids=self.context.get("completed_lesson_ids",set())
+        return obj.id in completed_ids
+
+
+class SubjectLearnSerializer(serializers.ModelSerializer):
+    lessons=LessonLearnSerializer(many=True,read_only=True)
+
+    class Meta:
+        model=Subject
+        fields=["id","title","order","lessons"]
+
+
+class CourseLearnSerializer(serializers.ModelSerializer):
+    subjects=SubjectLearnSerializer(many=True,read_only=True)
+    progress=serializers.SerializerMethodField()
+
+    class Meta:
+        model=Course
+        fields=["id","title","stage","duration","subjects","progress"]
+
+    def get_progress(self,obj):
+        completed_ids=self.context.get("completed_lesson_ids",set())
+        total=0
+        completed=0
+        for subject in obj.subjects.all():
+            for lesson in subject.lessons.all():
+                total+=1
+                if lesson.id in completed_ids:
+                    completed+=1
+        percent=round((completed/total)*100) if total else 0
+        return {"completed":completed,"total":total,"percent":percent}
+
+
+class LessonCompleteResponseSerializer(serializers.Serializer):
+    lesson_id=serializers.IntegerField()
+    completed=serializers.BooleanField()
 
 
 class GalleryImageSerializer(serializers.ModelSerializer):
@@ -92,13 +176,22 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data["password"])
         user.save()
         return user
-    
+
 class EnrollmentSerializer(serializers.ModelSerializer):
     course=CourseSerializer(read_only=True)
+    progress=serializers.SerializerMethodField()
 
     class Meta:
         model=Enrollment
-        fields=["id","course","enrolled_at"]
+        fields=["id","course","enrolled_at","progress"]
+
+    def get_progress(self,obj):
+        lessons=Lesson.objects.filter(subject__course=obj.course)
+        total=lessons.count()
+        if not total:
+            return {"completed":0,"total":0,"percent":0}
+        completed=LessonProgress.objects.filter(student=obj.student,lesson__in=lessons).count()
+        return {"completed":completed,"total":total,"percent":round((completed/total)*100)}
 
 class EnrollRequestSerializer(serializers.Serializer):
     course_id=serializers.IntegerField()
@@ -107,7 +200,7 @@ class EnrollRequestSerializer(serializers.Serializer):
         if not Course.objects.filter(id=value).exists():
             raise serializers.ValidationError("This course doesn't exist.")
         return value
-    
+
 
     class Meta:
         model=User

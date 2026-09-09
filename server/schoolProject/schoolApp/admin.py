@@ -1,12 +1,54 @@
 from django.contrib import admin
-from .models import AdmissionApplication,ContactMessage,Course,GalleryImage,Enrollment,Profile
+from .models import AdmissionApplication,ContactMessage,Course,GalleryImage,Enrollment,Profile,Lesson,Subject,LessonFile,LessonProgress
+
+
+class SubjectInline(admin.TabularInline):
+    model=Subject
+    extra=1
+    fields=("title","order")
+
+
+class LessonInline(admin.TabularInline):
+    model=Lesson
+    extra=1
+    fields=("title","order","youtube_url")
+
+
+class LessonFileInline(admin.TabularInline):
+    model=LessonFile
+    extra=1
+    fields=("label","file","order")
 
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display=("title","stage","duration","order")
+    list_display=("title","stage","duration","price","order")
     list_filter=("stage",)
     ordering=("order","title")
+    inlines=[SubjectInline]
+
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display=("title","course","order")
+    list_filter=("course",)
+    ordering=("course","order")
+    inlines=[LessonInline]
+
+
+@admin.register(Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display=("title","subject","order","youtube_url")
+    list_filter=("subject__course",)
+    ordering=("subject","order")
+    inlines=[LessonFileInline]
+
+
+@admin.register(LessonProgress)
+class LessonProgressAdmin(admin.ModelAdmin):
+    list_display=("student","lesson","completed_at")
+    search_fields=("student__email","student__username","lesson__title")
+    readonly_fields=("completed_at",)
 
 
 @admin.register(GalleryImage)

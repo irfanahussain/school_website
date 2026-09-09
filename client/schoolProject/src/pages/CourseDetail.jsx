@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getMyCourses, unenrollFromCourse } from "../../api.js";
-import { FALLBACK_IMAGE } from "../Courses.jsx";
+import { getMyCourses, unenrollFromCourse } from "../api.js";
+import { FALLBACK_IMAGE } from "./Courses.jsx";
 
 export default function StudentCourses() {
   const [enrollments, setEnrollments] = useState([]);
@@ -59,7 +59,7 @@ export default function StudentCourses() {
 
       {status === "ready" && enrollments.length > 0 && (
         <div className="course-grid">
-          {enrollments.map(({ course, progress }) => (
+          {enrollments.map(({ course }) => (
             <article key={course.id} className="course-card">
               <img
                 className="course-card__image"
@@ -70,25 +70,7 @@ export default function StudentCourses() {
                 <h3>{course.title}</h3>
                 <p className="course-card__summary">{course.summary}</p>
                 <p className="course-card__duration">{course.duration}</p>
-
-                {progress && (
-                  <div className="course-card__progress">
-                    <div className="learn__progress-bar learn__progress-bar--sm">
-                      <div
-                        className="learn__progress-fill"
-                        style={{ width: `${progress.percent}%` }}
-                      />
-                    </div>
-                    <p className="course-card__progress-label">
-                      {progress.completed}/{progress.total} lessons · {progress.percent}%
-                    </p>
-                  </div>
-                )}
-
                 <div className="course-card__action">
-                  <Link to={`/dashboard/courses/${course.id}/learn`} className="button button--primary button--sm">
-                    Continue Learning
-                  </Link>
                   <Link to={`/courses/${course.id}`} className="button button--ghost button--sm">
                     View Details
                   </Link>

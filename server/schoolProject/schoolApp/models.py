@@ -24,12 +24,64 @@ class Course(models.Model):
     duration=models.CharField(max_length=60)
     image=models.ImageField(upload_to="courses/",blank=True,null=True)
     order=models.PositiveIntegerField(default=0)
+    price=models.DecimalField(max_digits=8,decimal_places=2,default=0)
+    features=models.JSONField(default=list,blank=True,help_text="List of short feature strings shown on the course detail page.")
+    requirements=models.JSONField(default=list,blank=True,help_text="List of short requirement strings shown on the course detail page.")
 
     class Meta:
         ordering=["order","title"]
 
     def __str__(self):
         return self.title
+class Subject(models.Model):
+    course=models.ForeignKey(Course,on_delete=models.CASCADE,related_name="subjects")
+    title=models.CharField(max_length=150)
+    order=models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering=["order","id"]
+
+    def __str__(self):
+        return f"{self.course.title} — {self.title}"
+
+
+class Lesson(models.Model):
+    subject=models.ForeignKey(Subject,on_delete=models.CASCADE,related_name="lessons")
+    title=models.CharField(max_length=150)
+    order=models.PositiveIntegerField(default=0)
+    youtube_url=models.URLField(blank=True,help_text="YouTube video URL for this lesson (optional).")
+
+    class Meta:
+        ordering=["order","id"]
+
+    def _str_(self):
+        return f"{self.subject.title} — {self.title}"
+
+
+class LessonFile(models.Model):
+    lesson=models.ForeignKey(Lesson,on_delete=models.CASCADE,related_name="files")
+    label=models.CharField(max_length=150,help_text="Display name, e.g. 'Chapter 3 notes.pdf'")
+    file=models.FileField(upload_to="lesson_files/")
+    order=models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering=["order","id"]
+
+    def _str_(self):
+        return f"{self.lesson.title} — {self.label}"
+
+
+class LessonProgress(models.Model):
+    student=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name="lesson_progress")
+    lesson=models.ForeignKey(Lesson,on_delete=models.CASCADE,related_name="progress_entries")
+    completed_at=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together=("student","lesson")
+        ordering=["-completed_at"]
+
+    def _str_(self):
+        return f"{self.student} completed {self.lesson}"
 
 
 class GalleryImage(models.Model):

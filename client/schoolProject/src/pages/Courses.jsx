@@ -18,6 +18,12 @@ export const FALLBACK_IMAGE = {
   high: "/course-high.svg",
 };
 
+function formatPrice(price) {
+  const value = Number(price);
+  if (!value) return "Free";
+  return `₹${value.toLocaleString("en-IN")}`;
+}
+
 export default function Courses() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -136,8 +142,14 @@ export default function Courses() {
                 <div className="course-card__body">
                   <h3>{course.title}</h3>
                   <p className="course-card__summary">{course.summary}</p>
-                  <p className="course-card__duration">{course.duration}</p>
+                  <div className="course-card__tags">
+                    <p className="course-card__duration">{course.duration}</p>
+                    <p className="course-card__price">{formatPrice(course.price)}</p>
+                  </div>
                   <div className="course-card__action">
+                    <Link to={`/courses/${course.id}`} className="button button--ghost button--sm">
+                      View Details
+                    </Link>
                     {!user ? (
                       <Link to="/login" state={{ from: "/courses" }} className="button button--ghost button--sm">
                         Log in to enroll

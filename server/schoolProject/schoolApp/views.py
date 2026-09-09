@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, permissions,status
-from .models import AdmissionApplication, ContactMessage, Course, GalleryImage,Enrollment,Profile
+from .models import AdmissionApplication, ContactMessage, Course, GalleryImage,Enrollment,Profile,Lesson,LessonFile,LessonProgress
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
@@ -11,6 +11,8 @@ from .serializers import (
     AdmissionApplicationSerializer,
     ContactMessageSerializer,
     CourseSerializer,
+    CourseDetailSerializer,
+    CourseLearnSerializer,
     GalleryImageSerializer,
     RegisterSerializer,
     UserSerializer,
@@ -31,6 +33,11 @@ class CourseListView(generics.ListAPIView):
         if stage:
             qs=qs.filter(stage=stage)
         return qs
+
+
+class CourseDetailView(generics.RetrieveAPIView):
+    queryset=Course.objects.prefetch_related("subjects__lessons")
+    serializer_class=CourseDetailSerializer
 
 
 class GalleryImageListView(generics.ListAPIView):
@@ -139,3 +146,76 @@ class EnrollView(APIView):
         Enrollment.objects.filter(student=request.user,course_id=course_id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class CourseLearnView(APIView):
+    """Course → Subjects → Lessons → Files, gated behind an active enrollment."""
+
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request,pk):
+        course=get_object_or_404(
+            Course.objects.prefetch_related("subjects__lessons__files"),
+            id=pk,
+        )
+        if not Enrollment.objects.filter(student=request.user,course=course).exists():
+            return Response(
+                {"detail":"You must be enrolled in this course to view its lessons."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        completed_lesson_ids=set(
+            LessonProgress.objects.filter(
+                student=request.user,
+                lesson__subject__course=course,
+            ).values_list("lesson_id",flat=True)
+        )
+
+        serializer=CourseLearnSerializer(
+            course,
+            context={"completed_lesson_ids":completed_lesson_ids,"request":request},
+        )
+        return Response(serializer.data)
+
+
+class LessonCompleteView(APIView):
+    """Mark / unmark a lesson complete for the logged-in student."""
+
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request,pk):
+        lesson=get_object_or_404(Lesson,id=pk)
+        course=lesson.subject.course
+        if not Enrollment.objects.filter(student=request.user,course=course).exists():
+            return Response(
+                {"detail":"You must be enrolled in this course to update progress."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        LessonProgress.objects.get_or_create(student=request.user,lesson=lesson)
+        return Response({"lesson_id":lesson.id,"completed":True},status=status.HTTP_200_OK)
+
+    def delete(self,request,pk):
+        lesson=get_object_or_404(Lesson,id=pk)
+        LessonProgress.objects.filter(student=request.user,lesson=lesson).delete()
+        return Response({"lesson_id":lesson.id,"completed":False},status=status.HTTP_200_OK)
+
+
+class LessonFileDownloadView(APIView):
+    """Serves a lesson file only if the student is enrolled in its course."""
+
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request,pk):
+        lesson_file=get_object_or_404(LessonFile,id=pk)
+        course=lesson_file.lesson.subject.course
+        if not Enrollment.objects.filter(student=request.user,course=course).exists():
+            return Response(
+                {"detail":"You must be enrolled in this course to access this file."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if not lesson_file.file:
+            raise Http404
+        return FileResponse(
+            lesson_file.file.open("rb"),
+            as_attachment=True,
+            filename=lesson_file.file.name.rsplit("/",1)[-1],
+        )
