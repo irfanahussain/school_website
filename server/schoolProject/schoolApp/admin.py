@@ -81,5 +81,5 @@ class EnrollmentAdmin(admin.ModelAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display=("user","avatar")
-    search_fields=("user_email","user_username")
+    list_display=("user","phone","avatar")
+    search_fields=("user_email","user_username","phone")

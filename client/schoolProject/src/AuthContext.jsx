@@ -6,7 +6,8 @@ import {
   logoutAccount,
   registerAccount,
   setToken,
-  uploadAvatar,
+  updateProfile,
+  changePassword,
 } from "./api.js";
 
 const AuthContext = createContext(null);
@@ -51,14 +52,33 @@ export function AuthProvider({ children }) {
   }
 
   async function updateAvatar(file) {
-    const updatedUser = await uploadAvatar(file);
+    const updatedUser = await updateProfile({ avatar: file });
     setUser(updatedUser);
     return updatedUser;
   }
 
+  async function updateProfileDetails({ fullName, email, phone }) {
+    const updatedUser = await updateProfile({ fullName, email, phone });
+    setUser(updatedUser);
+    return updatedUser;
+  }
+
+  async function changeAccountPassword({ oldPassword, newPassword }) {
+    return changePassword({ oldPassword, newPassword });
+  }
+
   return (
     <AuthContext.Provider
-      value={{ user, status, login, register, logout, updateAvatar }}
+      value={{
+        user,
+        status,
+        login,
+        register,
+        logout,
+        updateAvatar,
+        updateProfileDetails,
+        changeAccountPassword,
+      }}
     >
       {children}
     </AuthContext.Provider>

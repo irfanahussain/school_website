@@ -171,6 +171,8 @@ class Enrollment(models.Model):
 class Profile(models.Model):
     user=models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name="profile")
     avatar=models.ImageField(upload_to="avatars/",blank=True,null=True)
+    phone=models.CharField(max_length=20,blank=True,validators=[phone_validator])
+
 
     def _str_(self):
         return f"{self.user}'s profile"

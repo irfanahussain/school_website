@@ -134,13 +134,16 @@ class AdmissionApplicationSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     full_name=serializers.SerializerMethodField()
+    avatar=serializers.SerializerMethodField()
+    phone=serializers.SerializerMethodField()
 
     class Meta:
         model=User
-        fields=["id","email","full_name"]
+        fields=["id","email","full_name","avatar","phone"]
 
     def get_full_name(self,obj):
         return obj.first_name or obj.email.split("@")[0]
+
     def get_avatar(self,obj):
         profile=Profile.objects.filter(user=obj).first()
         if not profile or not profile.avatar:
@@ -148,6 +151,19 @@ class UserSerializer(serializers.ModelSerializer):
         request=self.context.get("request")
         url=profile.avatar.url
         return request.build_absolute_uri(url) if request else url
+
+    def get_phone(self,obj):
+        profile=Profile.objects.filter(user=obj).first()
+        return profile.phone if profile else ""
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password=serializers.CharField(write_only=True)
+    new_password=serializers.CharField(write_only=True,min_length=8)
+
+    def validate_new_password(self,value):
+        validate_password(value)
+        return value
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -176,7 +192,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data["password"])
         user.save()
         return user
-
+    
 class EnrollmentSerializer(serializers.ModelSerializer):
     course=CourseSerializer(read_only=True)
     progress=serializers.SerializerMethodField()
@@ -200,26 +216,3 @@ class EnrollRequestSerializer(serializers.Serializer):
         if not Course.objects.filter(id=value).exists():
             raise serializers.ValidationError("This course doesn't exist.")
         return value
-
-
-    class Meta:
-        model=User
-        fields=["email","password","full_name"]
-
-    def validate_email(self,value):
-        value=value.strip().lower()
-        if User.objects.filter(username__iexact=value).exists():
-            raise serializers.ValidationError("An account with this email already exists.")
-        return value
-
-    def validate_password(self,value):
-        validate_password(value)
-        return value
-
-    def create(self,validated_data):
-        full_name=validated_data.pop("full_name").strip()
-        email=validated_data["email"]
-        user=User(username=email,email=email,first_name=full_name)
-        user.set_password(validated_data["password"])
-        user.save()
-        return user

@@ -1,21 +1,29 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../AuthContext.jsx";
-import { getMyCourses } from "../../api.js";
+import { getCourses, getMyCourses } from "../../api.js";
+import { FALLBACK_IMAGE } from "../Courses.jsx";
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [courseCount, setCourseCount] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [enrolledIds, setEnrolledIds] = useState(new Set());
+  const [status, setStatus] = useState("loading");
 
   useEffect(() => {
     let cancelled = false;
-    getMyCourses()
-      .then((data) => {
-        if (!cancelled) setCourseCount(data.length);
+
+    Promise.all([getCourses(), getMyCourses()])
+      .then(([allCourses, myCourses]) => {
+        if (cancelled) return;
+        setCourses(allCourses);
+        setEnrolledIds(new Set(myCourses.map((e) => e.course.id)));
+        setStatus("ready");
       })
       .catch(() => {
-        if (!cancelled) setCourseCount(null);
+        if (!cancelled) setStatus("error");
       });
+
     return () => {
       cancelled = true;
     };
@@ -26,36 +34,62 @@ export default function Dashboard() {
   return (
     <>
       <div className="student__header">
-        <p className="eyebrow">Dashboard</p>
+        <p className="eyebrow">Home</p>
         <h1>Welcome back, {firstName}.</h1>
-        <p className="student__lede">Here's a quick snapshot of your Softspire account.</p>
-      </div>
-
-      <div className="student__stats">
-        <div className="student__stat-card">
-          <span className="student__stat-value">{courseCount ?? "—"}</span>
-          <p className="student__stat-label">Courses you're enrolled in</p>
-        </div>
-        <div className="student__stat-card">
-          <span className="student__stat-value">Active</span>
-          <p className="student__stat-label">Account status</p>
-        </div>
+        <p className="student__lede">Pick up where you left off, or explore a new batch.</p>
       </div>
 
       <div className="student__quick-links">
         <Link to="/dashboard/courses" className="student__quick-link">
-          <h3>Browse your courses</h3>
-          <p>See the NEET, JEE and Foundation batches you can access.</p>
+          <h3>My Courses</h3>
+          <p>Continue learning from the batches you're already enrolled in.</p>
         </Link>
         <Link to="/dashboard/profile" className="student__quick-link">
-          <h3>View your profile</h3>
-          <p>Check the personal details on file for your account.</p>
-        </Link>
-        <Link to="/admissions" className="student__quick-link">
-          <h3>Enroll in a new batch</h3>
-          <p>Apply for an additional course or book a free demo class.</p>
+          <h3>My Profile</h3>
+          <p>Update your name, email, and profile photo.</p>
         </Link>
       </div>
+
+      <h2 className="student__section-title">Our Courses</h2>
+
+      {status === "loading" && <p className="state-message">Loading courses…</p>}
+      {status === "error" && <p className="state-message">Couldn't load courses right now.</p>}
+
+      {status === "ready" && (
+        <div className="course-grid">
+          {courses.map((course) => {
+            const enrolled = enrolledIds.has(course.id);
+            return (
+              <article key={course.id} className="course-card">
+                <img
+                  className="course-card__image"
+                  src={course.image || FALLBACK_IMAGE[course.stage] || "/course-foundation.svg"}
+                  alt={course.title}
+                />
+                <div className="course-card__body">
+                  <h3>{course.title}</h3>
+                  <p className="course-card__summary">{course.summary}</p>
+                  <p className="course-card__duration">{course.duration}</p>
+                  <div className="course-card__action">
+                    {enrolled ? (
+                      <Link
+                        to={`/dashboard/courses/${course.id}/learn`}
+                        className="button button--primary button--sm"
+                      >
+                        Continue Learning
+                      </Link>
+                    ) : (
+                      <Link to={`/courses/${course.id}`} className="button button--primary button--sm">
+                        Explore
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }

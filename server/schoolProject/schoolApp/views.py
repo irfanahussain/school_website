@@ -18,6 +18,7 @@ from .serializers import (
     UserSerializer,
     EnrollmentSerializer,
     EnrollRequestSerializer,
+    ChangePasswordSerializer,
 )
 User = get_user_model()
 
@@ -104,19 +105,62 @@ class MeView(APIView):
     permission_classes=[IsAuthenticated]
 
     def get(self,request):
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user,context={"request":request}).data)
 
     def patch(self,request):
+        user=request.user
+        full_name=(request.data.get("full_name") or "").strip()
+        email=(request.data.get("email") or "").strip().lower()
+        phone=request.data.get("phone")
         avatar=request.FILES.get("avatar")
-        if not avatar:
+
+        if not full_name and not email and phone is None and not avatar:
             return Response(
-                {"avatar":["No file was submitted."]},
+                {"detail":"No fields were submitted."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        profile,_=Profile.objects.get_or_create(user=request.user)
-        profile.avatar=avatar
-        profile.save()
-        return Response(UserSerializer(request.user,context={"request":request}).data)
+
+        if email:
+            if User.objects.filter(username__iexact=email).exclude(id=user.id).exists():
+                return Response(
+                    {"email":["An account with this email already exists."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            user.email=email
+            user.username=email
+
+        if full_name:
+            user.first_name=full_name
+
+        if email or full_name:
+            user.save()
+
+        if avatar or phone is not None:
+            profile,_=Profile.objects.get_or_create(user=user)
+            if avatar:
+                profile.avatar=avatar
+            if phone is not None:
+                profile.phone=phone.strip()
+            profile.save()
+
+        return Response(UserSerializer(user,context={"request":request}).data)
+
+
+class ChangePasswordView(APIView):
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request):
+        serializer=ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user=request.user
+        if not user.check_password(serializer.validated_data["old_password"]):
+            return Response(
+                {"old_password":["Current password is incorrect."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.set_password(serializer.validated_data["new_password"])
+        user.save()
+        return Response({"detail":"Password updated."})
 
 
 
@@ -219,3 +263,4 @@ class LessonFileDownloadView(APIView):
             as_attachment=True,
             filename=lesson_file.file.name.rsplit("/",1)[-1],
         )
+

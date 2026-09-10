@@ -82,13 +82,15 @@ export function fetchCurrentUser() {
   return request(`/auth/me/`);
 }
 
-export async function uploadAvatar(file) {
+export async function updateProfile({ fullName, email, avatar } = {}) {
   const token = getToken();
   const headers = {};
   if (token) headers.Authorization = `Token ${token}`;
 
   const formData = new FormData();
-  formData.append("avatar", file);
+  if (fullName !== undefined) formData.append("full_name", fullName);
+  if (email !== undefined) formData.append("email", email);
+  if (avatar) formData.append("avatar", avatar);
 
   const res = await fetch(`${BASE_URL}/api/auth/me/`, {
     method: "PATCH",
@@ -106,6 +108,13 @@ export async function uploadAvatar(file) {
   }
 
   return data;
+}
+
+export function changePassword({ oldPassword, newPassword }) {
+  return request(`/auth/change-password/`, {
+    method: "POST",
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+  });
 }
 
 export function getMyCourses() {
