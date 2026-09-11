@@ -81,6 +81,9 @@ export default function Login() {
               onChange={handleChange}
             />
             {errors.password && <span className="form__error">{errors.password}</span>}
+            <Link to="/forgot-password" className="form__forgot-link">
+              Forgot password?
+            </Link>
           </div>
 
           <button type="submit" className="button button--primary" disabled={status === "submitting"}>

@@ -1,5 +1,10 @@
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, render
+from django.conf import settings as dj_settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, permissions,status
 from .models import AdmissionApplication, ContactMessage, Course, GalleryImage,Enrollment,Profile,Lesson,LessonFile,LessonProgress
 from django.contrib.auth import authenticate, get_user_model
@@ -19,6 +24,8 @@ from .serializers import (
     EnrollmentSerializer,
     EnrollRequestSerializer,
     ChangePasswordSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer,
 )
 User = get_user_model()
 
@@ -144,6 +151,76 @@ class MeView(APIView):
             profile.save()
 
         return Response(UserSerializer(user,context={"request":request}).data)
+
+
+class PasswordResetRequestView(APIView):
+    """Kicks off the 'forgot password' flow: emails a reset link if the account exists."""
+
+    permission_classes=[permissions.AllowAny]
+
+    def post(self,request):
+        serializer=PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email=serializer.validated_data["email"]
+        user=User.objects.filter(username__iexact=email).first()
+
+        if user is not None:
+            uid=urlsafe_base64_encode(force_bytes(user.pk))
+            token=default_token_generator.make_token(user)
+            frontend_url=getattr(dj_settings,"FRONTEND_URL","http://localhost:5173").rstrip("/")
+            reset_link=f"{frontend_url}/reset-password/{uid}/{token}"
+            send_mail(
+                subject="Reset your Softspire password",
+                message=(
+                    f"Hi {user.first_name or 'there'},\n\n"
+                    "We received a request to reset the password for your Softspire account. "
+                    f"Click the link below to choose a new one:\n\n{reset_link}\n\n"
+                    "This link will expire once used or after a while for your security. "
+                    "If you didn't request this, you can safely ignore this email — your "
+                    "password will stay the same."
+                ),
+                from_email=getattr(dj_settings,"DEFAULT_FROM_EMAIL","no-reply@softspire.local"),
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+
+        # Always return the same response, whether or not the email exists,
+        # so this endpoint can't be used to check which emails are registered.
+        return Response(
+            {"detail":"If an account with that email exists, we've sent a password reset link."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class PasswordResetConfirmView(APIView):
+    """Completes the 'forgot password' flow using the uid/token from the emailed link."""
+
+    permission_classes=[permissions.AllowAny]
+
+    def post(self,request):
+        serializer=PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        uid=serializer.validated_data["uid"]
+        token=serializer.validated_data["token"]
+        new_password=serializer.validated_data["new_password"]
+
+        try:
+            user_id=force_str(urlsafe_base64_decode(uid))
+            user=User.objects.get(pk=user_id)
+        except (TypeError,ValueError,OverflowError,User.DoesNotExist):
+            user=None
+
+        if user is None or not default_token_generator.check_token(user,token):
+            return Response(
+                {"detail":"This password reset link is invalid or has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(new_password)
+        user.save()
+        Token.objects.filter(user=user).delete()  # sign out of any active sessions
+
+        return Response({"detail":"Your password has been reset. You can now log in."})
 
 
 class ChangePasswordView(APIView):

@@ -919,6 +919,13 @@ main { flex: 1; }
 
 .form__error { color: var(--error); font-size: 0.85rem; }
 
+.form__forgot-link {
+  align-self: flex-end;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brand);
+}
+
 .form__banner {
   padding: 0.9rem 1rem;
   border-radius: 8px;

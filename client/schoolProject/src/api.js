@@ -110,6 +110,20 @@ export async function updateProfile({ fullName, email, avatar } = {}) {
   return data;
 }
 
+export function requestPasswordReset(email) {
+  return request(`/auth/password-reset/`, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function confirmPasswordReset({ uid, token, newPassword }) {
+  return request(`/auth/password-reset-confirm/`, {
+    method: "POST",
+    body: JSON.stringify({ uid, token, new_password: newPassword }),
+  });
+}
+
 export function changePassword({ oldPassword, newPassword }) {
   return request(`/auth/change-password/`, {
     method: "POST",
