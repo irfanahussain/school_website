@@ -125,7 +125,7 @@ export default function Profile() {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="+91 98765 43210"
+            placeholder="enter your mobile number"
           />
         </label>
 

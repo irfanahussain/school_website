@@ -100,7 +100,7 @@ export default function Courses() {
 
   return (
     <>
-      <section className="page-header">
+      <section className="page-header page-header--compact">
         <p className="page-header__eyebrow eyebrow">Academics</p>
         <h1>Courses built around real exam patterns.</h1>
         <p className="page-header__lede">
@@ -109,7 +109,7 @@ export default function Courses() {
         </p>
       </section>
 
-      <section className="section">
+      <section className="section section--tight section--tight-bottom">
         <div className="tabs" role="tablist" aria-label="Filter courses by program stage">
           {STAGES.map((s) => (
             <button

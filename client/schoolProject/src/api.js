@@ -82,7 +82,7 @@ export function fetchCurrentUser() {
   return request(`/auth/me/`);
 }
 
-export async function updateProfile({ fullName, email, avatar } = {}) {
+export async function updateProfile({ fullName, email, phone, avatar } = {}) {
   const token = getToken();
   const headers = {};
   if (token) headers.Authorization = `Token ${token}`;
@@ -90,6 +90,7 @@ export async function updateProfile({ fullName, email, avatar } = {}) {
   const formData = new FormData();
   if (fullName !== undefined) formData.append("full_name", fullName);
   if (email !== undefined) formData.append("email", email);
+  if (phone !== undefined) formData.append("phone", phone);
   if (avatar) formData.append("avatar", avatar);
 
   const res = await fetch(`${BASE_URL}/api/auth/me/`, {

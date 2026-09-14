@@ -54,7 +54,7 @@ class Lesson(models.Model):
     class Meta:
         ordering=["order","id"]
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.subject.title} — {self.title}"
 
 
@@ -67,7 +67,7 @@ class LessonFile(models.Model):
     class Meta:
         ordering=["order","id"]
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.lesson.title} — {self.label}"
 
 
@@ -80,7 +80,7 @@ class LessonProgress(models.Model):
         unique_together=("student","lesson")
         ordering=["-completed_at"]
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.student} completed {self.lesson}"
 
 
@@ -174,7 +174,7 @@ class Profile(models.Model):
     phone=models.CharField(max_length=20,blank=True,validators=[phone_validator])
 
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.user}'s profile"
 
 

@@ -39,10 +39,18 @@ export default function StudentCourses() {
 
   return (
     <>
-      <div className="student__header">
-        <p className="eyebrow">My Courses</p>
-        <h1>Courses you're enrolled in</h1>
-        <p className="student__lede">Batches you've signed up for as a Softspire student.</p>
+      <div className="student__banner">
+        <div className="student__banner-copy">
+          <p className="eyebrow student__banner-eyebrow">My Courses</p>
+          <h1>Courses you're enrolled in</h1>
+          <p>Batches you've signed up for as a Softspire student.</p>
+        </div>
+        <img
+          className="student__banner-illustration"
+          src="/course-foundation.svg"
+          alt=""
+          aria-hidden="true"
+        />
       </div>
 
       {status === "loading" && <p className="state-message">Loading your courses…</p>}
