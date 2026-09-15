@@ -94,9 +94,7 @@ export default function Navbar() {
                 <NavLink to="/dashboard" className="navbar__link" onClick={() => setOpen(false)}>
                   Dashboard
                 </NavLink>
-                <button type="button" className="navbar__link navbar__link--button" onClick={handleLogout}>
-                  Log out
-                </button>
+                
               </>
             ) : (
               <NavLink to="/login" className="navbar__link" onClick={() => setOpen(false)}>

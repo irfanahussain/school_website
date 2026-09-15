@@ -145,6 +145,9 @@ export default function StudentLayout() {
             </NavLink>
           ))}
         </nav>
+         <button type="button" className="student__logout" onClick={handleLogout}>
+          Log out
+        </button>
 
         
       </aside>
